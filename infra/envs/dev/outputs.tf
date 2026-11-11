@@ -34,3 +34,8 @@ output "ecr_repository_urls" {
 output "backend_asg_name" {
   value = module.backend.asg_name
 }
+
+output "upload_api_invoke_url" {
+  description = "Direct stage URL (for testing; the site calls it via CloudFront /api/upload)."
+  value       = module.upload_api.invoke_url
+}

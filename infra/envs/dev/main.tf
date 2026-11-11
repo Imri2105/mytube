@@ -66,3 +66,18 @@ module "backend" {
     PROCESSED_BUCKET  = module.storage.bucket_names["processed"]
   }
 }
+
+# Build the package first: scripts/build_lambda.sh
+module "upload_api" {
+  source                = "../../modules/upload-api"
+  name                  = "${local.name}-upload-url"
+  lambda_source_dir     = "${path.root}/../../../app/lambdas/upload_url/.build"
+  subnet_ids            = module.network.app_subnet_ids
+  security_group_id     = module.network.security_group_ids["lambda"]
+  db_host               = module.database.address
+  db_port               = module.database.port
+  db_name               = module.database.db_name
+  db_secret_arn         = module.database.master_secret_arn
+  raw_bucket            = module.storage.bucket_names["raw"]
+  cognito_user_pool_arn = module.auth.user_pool_arn
+}

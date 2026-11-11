@@ -1,0 +1,2 @@
+# boto3 comes with the Lambda runtime; only psycopg is packaged.
+psycopg[binary]
