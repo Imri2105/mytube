@@ -39,3 +39,9 @@ variable "local_dev_urls" {
   type        = list(string)
   default     = ["http://localhost:8080/"]
 }
+
+variable "alarm_email" {
+  description = "Optional email for the DLQ alarm. Null = alarm shows in CloudWatch only."
+  type        = string
+  default     = null
+}

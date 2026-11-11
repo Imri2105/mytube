@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf install -y docker
+systemctl enable --now docker
+
+aws ecr get-login-password --region ${region} \
+  | docker login --username AWS --password-stdin "${split("/", image)[0]}"
+
+# No published ports: the worker only makes outbound calls (SQS, S3, RDS).
+docker run -d --name worker --restart always \
+  --log-driver awslogs \
+  --log-opt awslogs-region=${region} \
+  --log-opt awslogs-group=${log_group} \
+  --log-opt awslogs-stream="$(ec2-metadata --instance-id | cut -d' ' -f2)" \
+  -e AWS_REGION=${region} \
+%{ for k, v in env ~}
+  -e "${k}=${v}" \
+%{ endfor ~}
+  "${image}"
