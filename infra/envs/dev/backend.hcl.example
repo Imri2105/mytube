@@ -1,0 +1,6 @@
+# Copy to backend.hcl (gitignored) with the bucket from `terraform -chdir=infra/bootstrap output -raw backend_hcl`.
+bucket       = "mytube-tfstate-<account-id>-il-central-1"
+key          = "mytube/dev/terraform.tfstate"
+region       = "il-central-1"
+encrypt      = true
+use_lockfile = true
