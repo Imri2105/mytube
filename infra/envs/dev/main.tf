@@ -81,3 +81,24 @@ module "upload_api" {
   raw_bucket            = module.storage.bucket_names["raw"]
   cognito_user_pool_arn = module.auth.user_pool_arn
 }
+
+module "worker" {
+  source                     = "../../modules/worker-asg"
+  name                       = "${local.name}-worker"
+  subnet_ids                 = module.network.app_subnet_ids
+  instance_security_group_id = module.network.security_group_ids["worker"]
+  ecr_repository_url         = aws_ecr_repository.app["worker"].repository_url
+  ecr_repository_arn         = aws_ecr_repository.app["worker"].arn
+  db_secret_arn              = module.database.master_secret_arn
+  raw_bucket                 = module.storage.bucket_names["raw"]
+  processed_bucket           = module.storage.bucket_names["processed"]
+  alarm_email                = var.alarm_email
+
+  container_env = {
+    DB_HOST          = module.database.address
+    DB_PORT          = tostring(module.database.port)
+    DB_NAME          = module.database.db_name
+    DB_SECRET_ARN    = module.database.master_secret_arn
+    PROCESSED_BUCKET = module.storage.bucket_names["processed"]
+  }
+}

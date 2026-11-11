@@ -39,3 +39,15 @@ output "upload_api_invoke_url" {
   description = "Direct stage URL (for testing; the site calls it via CloudFront /api/upload)."
   value       = module.upload_api.invoke_url
 }
+
+output "worker_asg_name" {
+  value = module.worker.asg_name
+}
+
+output "jobs_queue_url" {
+  value = module.worker.queue_url
+}
+
+output "dlq_url" {
+  value = module.worker.dlq_url
+}
