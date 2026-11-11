@@ -26,3 +26,11 @@ output "db_secret_arn" {
   description = "ARN only; the secret value is never exposed by Terraform."
   value       = module.database.master_secret_arn
 }
+
+output "ecr_repository_urls" {
+  value = { for k, r in aws_ecr_repository.app : k => r.repository_url }
+}
+
+output "backend_asg_name" {
+  value = module.backend.asg_name
+}

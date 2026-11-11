@@ -33,3 +33,36 @@ module "database" {
   security_group_id = module.network.security_group_ids["db"]
   multi_az          = var.db_multi_az
 }
+
+# Shared secret between CloudFront (custom origin header) and the ALB listener rule.
+# Lives in state only; never output.
+resource "random_password" "origin_verify" {
+  length  = 40
+  special = false
+}
+
+module "backend" {
+  source                     = "../../modules/backend-asg"
+  name                       = "${local.name}-backend"
+  vpc_id                     = module.network.vpc_id
+  subnet_ids                 = module.network.app_subnet_ids
+  alb_security_group_id      = module.network.security_group_ids["alb"]
+  instance_security_group_id = module.network.security_group_ids["backend"]
+  origin_verify_secret       = random_password.origin_verify.result
+  ecr_repository_url         = aws_ecr_repository.app["backend"].repository_url
+  ecr_repository_arn         = aws_ecr_repository.app["backend"].arn
+  db_secret_arn              = module.database.master_secret_arn
+  raw_bucket                 = module.storage.bucket_names["raw"]
+  processed_bucket           = module.storage.bucket_names["processed"]
+
+  container_env = {
+    DB_HOST           = module.database.address
+    DB_PORT           = tostring(module.database.port)
+    DB_NAME           = module.database.db_name
+    DB_SECRET_ARN     = module.database.master_secret_arn
+    COGNITO_ISSUER    = module.auth.issuer
+    COGNITO_CLIENT_ID = module.auth.client_id
+    RAW_BUCKET        = module.storage.bucket_names["raw"]
+    PROCESSED_BUCKET  = module.storage.bucket_names["processed"]
+  }
+}
